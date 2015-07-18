@@ -1,0 +1,205 @@
+---------------------
+21 MAI 2013 - PHASE 1
+---------------------
+Nous avons récupéré les sources de départ du projet
+et y avons ajouté notre écran de pratique du système.
+
+
+---------------------
+22 MAI 2013 - PHASE 2
+---------------------
+
+Nous avons crée un paquetage process.{c,h} et avons défini la structure d'un processus.
+Nous avons réutilisé celle du projet pratique du système mais nous sommes conscient qu'il faudra
+y apporter des modifications. Nous allouons cependant la stack du processus à l'aide de l'allocateur
+kernel. 
+Nous avons d'ailleurs eu un problème car la size spécifiée est en octets.
+De plus, nous avons réussi à passer un paramètre à notre application dans la fonction start en le stockant
+dans la pile du processus.
+Nous avons testé un ordonnancement manuel des processus.
+
+---------------------
+24 MAI 2013 - PHASE 2
+---------------------
+
+Nous avons détécté et corrigé quelques bugs de l'écran.
+Nous avons appris à utiliser le package "queue.h".
+A l'aide du paquetage "queue.h", nous avons implémenté un ordonnanceur à priorités fixes.
+Nous avons, à l'heure actuelle, un champ indiquant si le processus dors ("sleep"), un champ 
+indiquant si le processus est vivant ou mort ("live").
+Notre ordonnanceur ne gère pas pour l'instant l'endormissement des processus.
+
+
+----------------------------------------------
+		PARTIELS
+----------------------------------------------
+
+---------------------
+1 JUIN 2013 - PHASE 3
+---------------------
+
+Nous avons modifié la procédure de mort des processus. En cas de mort du processus, nous ne faisons que libérer sa pile et nous 
+pouvons ainsi réutilisé la structure allouée précédemment. Nous réinitialisons tous les autres paramètres.
+
+Nous avons défini une énumération des états d'un processus. Un processus a ainsi un champ unique de type Etat prenant une valeur parmis
+{ACTIVABLE, ENDORMI, MORT}.
+
+Nous avons maintenant deux listes de processus pour l'ordonnancement. Celle des processus activables et celle des processus endormis. 
+Nous avons choisi de trier celle des processus endormi grace au champ de la structure process nommé "heure_reveil". 
+Nous avons modifié notre fonction d'ordonnancement afin de passer, à chaque ordonnancement, les processus dont l'heure de reveil est atteinte dans la liste des processus activables.
+
+Nous avons réalisé un test complet pour valider cette phase (qui crée des processus qui écrivent des caractères particuliers à une fréquence de secondes donnés). Ce test était d'ailleur fourni dans le document de conduite de projet.
+
+---------------------
+2 JUIN 2013 - PHASE 4
+---------------------
+
+Nous avons implémenté les files de messages et les avons testées en adaptant les tests fournis par les encadrants.
+Nous avons aussi implémenté une première version de chrpio et getprio (non testées).
+
+-------------------------
+3 JUIN 2013 - PHASE 3 & 4
+-------------------------
+
+Actuellement notre fonction FinishProcess est appelée à la terminaison d'un processus. 
+Nous avons aussi ajouté un Etat ZOMBIE qui permettra au père d'attendre ses fils.
+Nous avons aussi ajouté un buffer à la structure des processus afin d'y stocker la valeur de retour pour que le père puisse la récupérer.
+Nous avons aussi commencé la mise en place de la filiation entre les processus.
+Nous avons implémenté les appels systèmes kill et repris chprio afin de bien gérer toutes les listes dans lesquels le processus peut se trouver (files de messages incluses).
+
+-------------------------
+4 JUIN 2013 - PHASE 3 & 4
+-------------------------
+
+Implémentation appel système waitpid et tests
+
+-------------------------
+6 JUIN 2013 - PHASE 3 & 4
+-------------------------
+Modification de la sémantiques de kill. On ne tue pas les processus fils du processus killé. On les rends juste orphelins.
+Mise en place de la mémoire virtuelle. Création des packages associés sans les tester.
+
+--------------------------
+6 - 8 JUIN 2013 - PHASE 5
+--------------------------
+
+Nous avons écrit un fichier syscall.S contenant tous les appels systèmes (lorsque le nombre de paramètres est supérieur à 2, on passe juste %esp).
+
+Nous avons enfin compris qu'il était nécessaire de manipuler le registre cr3 pour la pagination. 
+Nous étions de plus bloqué car nous déférencions notre page diretory sans retirer les flags.
+Nous avons modifié la structure du processus. Nous n'allouons plus de stack, nous utilisons un allocateur physique utilisant des pages de 4Ko.
+Nous avons décidé de placer la pile du processus à 2Go (en mémoire virtuelle) pour tous les processus.
+Le code, les données et le tas sont eux mappés à 1Go.
+
+----------------------
+8 JUIN 2013 - PHASE 5
+----------------------
+
+Nous avons testé les appels systèmes (en réalité l'assembleur) en les copiants en mode Kernel.
+
+Nous avons implémenté le paquetage de gestion des pages partagées. Nous avions une erreur car nous mettions le bit P à 0 lorsqu'un processus faisait un release. 
+Ajout appels systèmes pour la mémoire partagée.
+
+En parallèle, nous avons implémenté les semaphores (non testés) et les avons ajouté à la bibliothèque d'appels systèmes.
+
+-------------------------
+9 JUIN 2013 - PHASE 5 - 6
+-------------------------
+
+Nous avons décidé de mettre en place la séparation des modes KERNEL et USER que lorsque tous les tests seront validés.
+Les tests 6, 8, 9, 13, 17, 18 ne passent pas pour l'instant.
+Nous avions un problème d'accès aux variables globales car nous avions mis le code des applications en lecture seule.
+
+En parallèle, implémentation du driver clavier dans les fichiers keyboard.{c,h}
+
+-----------------------
+10 JUIN 2013 - PHASE 5
+-----------------------
+ Tous les tests passent maintenant sauf le 18 et le 9.
+
+traitant_IT.S : Debogage
+===> Modification manipulation %esp. (plus de pop mais un add).
+
+-----------------------
+11 JUIN 2013 - PHASE 3
+-----------------------
+
+La mise en place du mode user/kernel à été faite.
+On place maintenant la pile kernel a 512Mo
+La pile user est toujours a 2Go
+La version n'est pas tout a fait stable.
+Les tests 7, 9, 11, 13, 16, 18 ne passent pas
+
+Tests des sémaphores. Modification du paquetage pour faire passer les tests.
+Le principal problème était lié au kill d'un processus bloqué sur un sémaphore (nous n'augmentions pas le compteur)
+
+--------------------------
+11 JUIN 2013 - PHASE 5 & 6
+--------------------------
+
+Nous avons ajouté le code assembleur en debut de chaque processus afin qu'a leurs première execution,
+ils passent en mode user.
+
+Nous avons aussi remodifié les droits sur les pages partagés. En effet, comme on transmet l'adresse
+direct mapped au processus user, il faut lui donner les bons droits sur cette page afin qu'il puisse y acceder.
+Enfin, nous avons remodifié le formatage de l'echo afin qu'il respecte la spécification du cahier des charges.
+
+----------------------
+12 JUIN 2013 - PHASE 7
+----------------------
+
+On ne sauvegarde maintenant que les registres scratch lors d'interruptions.
+Nous nous sommes interessés à la protection des appels systèmes, mais seulement sur waitpid pour le moment.
+Ajout de traitants d'interruptions sur les trap 13 et 14.
+Si un défaut de page ou de permission est effectué par le processus on le kill.
+Création de l'application shell, avec la commande ps, et test.
+
+----------------------
+13 JUIN 2013 - PHASE 7
+----------------------
+
+Ajout de la commande kill pour le shell.
+Protection de tous les appels systèmes (les adresses doivent se trouver entre 1Go et 4Go).
+Protection des interruptions, seul l'interruption 49 est autorisé pour le mode user.
+Ajout d'un test pour la commande ps.
+Mise en place des structures pour la création d'un système de gestion de fichiers.
+
+-----------------------------------
+14 JUIN 2013 - PHASE 7 & EXTENSIONS
+-----------------------------------
+
+Ajout appels systèmes sinfo, pinfo et clear et tests associés.
+Implémentation de cd, ls, mkdir, rmdir, touch. cd et mkdir touch et rmdir ne fonctionnent que dans les répertoires courant.
+Ajout appel système nice et refonte du parseur.
+
+----------------------------------
+15 JUIN 2013 - PHASE 7 & EXTENSION
+----------------------------------
+
+Mise au propre de l'application shell.
+Les paramètres des commandes peuvent maintenant etre indiqués après des espaces grace à un pseudo-parseur.
+Implémentation de la commande "edit" pour editer un fichier. L'appui sur la touche "Echap" permet de sauvegarder et quitter.
+Ajout de la commande cat, pour afficher le contenu du fichier.
+
+----------------------------------
+17 JUIN 2013 - PHASE 5 & EXTENSION
+----------------------------------
+
+Les descripteurs de segments ES, GS, FS, DS sont maintenant mis aux valeurs correspondants au mode d'exécution du noyau.
+Ajout de l'appel système sys_sbrk qui permet d'agrandir le tas et d'effectuer des malloc en mode USER.
+On peut maintenant se deplacer avec les fleches dans l'editeur.
+Nous avons aussi retiré la protection de l'affichage pour l'éditeur car il n'était pas possible de l'étendre
+à d'autres applications de façon propre.
+Implémentation de fonctions utilisateur de gestion de fichiers (fopen, fclose, fread et fwrite).
+Implémentation d'un parseur de commandes qui teste l'allocation dynamique en mode user et permet de réaliser 
+des tests sur les lignes de commandes et afficher des messages personnalisés
+
+--------------------------------
+18 JUIN 2013 - PHASE D'EXTENSION
+--------------------------------
+
+Ajout du journal de bord dans le git.
+Implémentation d'un pseudo parseur pour le chemin de fichiers dans le gestionnaire de fichiers.
+Ajout d'un paramètre de type directory à l'appel système ls afin de faire des ls de dossier.
+Correction de l'implémentation de fread et fwrite.
+
